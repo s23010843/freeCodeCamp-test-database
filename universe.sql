@@ -1,150 +1,117 @@
--- Step 1: Create the database
-CREATE DATABASE IF NOT EXISTS celestial_bodies_db;
-USE celestial_bodies_db;
+-- Create the database
+CREATE DATABASE universe;
+\c universe;
 
--- Step 2: Create celestial_bodies table (to store planets, moons, and stars)
-CREATE TABLE IF NOT EXISTS celestial_bodies (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(255) NOT NULL, -- 'Planet', 'Moon', 'Star', etc.
-    description TEXT,
-    mass DECIMAL(15, 5),
-    diameter DECIMAL(15, 5),
-    distance_from_sun DECIMAL(15, 5) -- in millions of kilometers
+-- Create the galaxy table
+CREATE TABLE galaxy (
+  galaxy_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  galaxy_type TEXT NOT NULL,
+  age_in_millions_of_years INT NOT NULL,
+  distance_from_earth NUMERIC NOT NULL,
+  has_life BOOLEAN NOT NULL
 );
 
--- Step 3: Create orbits table (to store relationships between planets and moons)
-CREATE TABLE IF NOT EXISTS orbits (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    planet_id INT, -- Foreign key to celestial_bodies table (planet)
-    moon_id INT, -- Foreign key to celestial_bodies table (moon)
-    orbit_distance DECIMAL(15, 5), -- Distance of the moon from the planet (in km)
-    FOREIGN KEY (planet_id) REFERENCES celestial_bodies(id),
-    FOREIGN KEY (moon_id) REFERENCES celestial_bodies(id)
+-- Insert at least 6 galaxies
+INSERT INTO galaxy (name, galaxy_type, age_in_millions_of_years, distance_from_earth, has_life) VALUES
+('Milky Way', 'Spiral', 13600, 0.0, TRUE),
+('Andromeda', 'Spiral', 10000, 2537000, FALSE),
+('Triangulum', 'Spiral', 9000, 3000000, FALSE),
+('Whirlpool', 'Spiral', 8000, 23000000, FALSE),
+('Sombrero', 'Elliptical', 10000, 29000000, FALSE),
+('Large Magellanic Cloud', 'Irregular', 7000, 163000, FALSE);
+
+-- Create the star table
+CREATE TABLE star (
+  star_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  galaxy_id INT REFERENCES galaxy(galaxy_id) NOT NULL,
+  mass NUMERIC NOT NULL,
+  is_spherical BOOLEAN NOT NULL,
+  temperature INT NOT NULL
 );
 
--- Step 4: Insert planets (example data)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Earth', 'Planet', 'The third planet from the Sun and the only one known to support life.', 5.972, 12742, 149.6),
-    ('Mars', 'Planet', 'The fourth planet from the Sun, known as the Red Planet.', 0.64171, 6779, 227.9),
-    ('Jupiter', 'Planet', 'The fifth planet from the Sun, the largest planet in the Solar System.', 1898.19, 139820, 778.5),
-    ('Saturn', 'Planet', 'The sixth planet from the Sun, known for its beautiful rings.', 568.34, 116460, 1433.5);
+-- Insert at least 6 stars
+INSERT INTO star (name, galaxy_id, mass, is_spherical, temperature) VALUES
+('Sun', 1, 1.989e30, TRUE, 5778),
+('Proxima Centauri', 1, 0.122e30, TRUE, 3042),
+('Sirius', 1, 2.02e30, TRUE, 9940),
+('Betelgeuse', 1, 11.6e30, TRUE, 3500),
+('Alpha Centauri A', 1, 1.1e30, TRUE, 5790),
+('Rigel', 1, 18e30, TRUE, 11000);
 
--- Step 5: Insert moons (example data)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Moon', 'Moon', 'Earth\'s only natural satellite.', 0.073, 3474.8, 384.4),
-    ('Phobos', 'Moon', 'One of Mars\' moons, the closest to Mars.', 0.0001, 22.4, 9377.0),
-    ('Deimos', 'Moon', 'The second moon of Mars, smaller and farther than Phobos.', 0.00006, 12.4, 23460.0),
-    ('Europa', 'Moon', 'One of Jupiter\'s moons, known for its icy surface.', 0.0048, 3121.6, 670900.0),
-    ('Titan', 'Moon', 'The largest moon of Saturn, with a thick atmosphere.', 1.3452, 5150.0, 1221900.0);
-
--- Step 6: Link moons to their respective planets (orbits)
-INSERT INTO orbits (planet_id, moon_id, orbit_distance)
-VALUES 
-    ((SELECT id FROM celestial_bodies WHERE name = 'Earth'), (SELECT id FROM celestial_bodies WHERE name = 'Moon'), 384400),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Mars'), (SELECT id FROM celestial_bodies WHERE name = 'Phobos'), 9377),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Mars'), (SELECT id FROM celestial_bodies WHERE name = 'Deimos'), 23460),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Jupiter'), (SELECT id FROM celestial_bodies WHERE name = 'Europa'), 670900),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Saturn'), (SELECT id FROM celestial_bodies WHERE name = 'Titan'), 1221900);
-
--- Step 7: Additional sample data for other celestial bodies (like stars)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Sun', 'Star', 'The star at the center of our Solar System.', 1989000, 1392000, 0);
-
--- Step 8: Example Queries (Optional to include)
--- These queries are just for reference, you can remove or execute them after the database is created.
--- Query: Get all planets
-SELECT * FROM celestial_bodies WHERE type = 'Planet';
-
--- Query: Get moons of Mars
-SELECT b.name AS moon_name, o.orbit_distance
-FROM celestial_bodies b
-JOIN orbits o ON b.id = o.moon_id
-JOIN celestial_bodies p ON o.planet_id = p.id
-WHERE p.name = 'Mars';
-
--- Query: Get the planet with the most moons
-SELECT p.name, COUNT(o.moon_id) AS moon_count
-FROM celestial_bodies p
-JOIN orbits o ON p.id = o.planet_id
-GROUP BY p.name
-ORDER BY moon_count DESC
-LIMIT 1;
--- Step 1: Create the database
-CREATE DATABASE IF NOT EXISTS celestial_bodies_db;
-USE celestial_bodies_db;
-
--- Step 2: Create celestial_bodies table (to store planets, moons, and stars)
-CREATE TABLE IF NOT EXISTS celestial_bodies (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(255) NOT NULL, -- 'Planet', 'Moon', 'Star', etc.
-    description TEXT,
-    mass DECIMAL(15, 5),
-    diameter DECIMAL(15, 5),
-    distance_from_sun DECIMAL(15, 5) -- in millions of kilometers
+-- Create the planet table
+CREATE TABLE planet (
+  planet_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  star_id INT REFERENCES star(star_id) NOT NULL,
+  has_life BOOLEAN NOT NULL,
+  planet_type TEXT NOT NULL,
+  radius_km INT NOT NULL,
+  is_spherical BOOLEAN NOT NULL
 );
 
--- Step 3: Create orbits table (to store relationships between planets and moons)
-CREATE TABLE IF NOT EXISTS orbits (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    planet_id INT, -- Foreign key to celestial_bodies table (planet)
-    moon_id INT, -- Foreign key to celestial_bodies table (moon)
-    orbit_distance DECIMAL(15, 5), -- Distance of the moon from the planet (in km)
-    FOREIGN KEY (planet_id) REFERENCES celestial_bodies(id),
-    FOREIGN KEY (moon_id) REFERENCES celestial_bodies(id)
+-- Insert at least 12 planets
+INSERT INTO planet (name, star_id, has_life, planet_type, radius_km, is_spherical) VALUES
+('Earth', 1, TRUE, 'Terrestrial', 6371, TRUE),
+('Mars', 1, FALSE, 'Terrestrial', 3389, TRUE),
+('Jupiter', 1, FALSE, 'Gas Giant', 69911, TRUE),
+('Saturn', 1, FALSE, 'Gas Giant', 58232, TRUE),
+('Neptune', 1, FALSE, 'Ice Giant', 24622, TRUE),
+('Uranus', 1, FALSE, 'Ice Giant', 25362, TRUE),
+('Venus', 1, FALSE, 'Terrestrial', 6052, TRUE),
+('Mercury', 1, FALSE, 'Terrestrial', 2439, TRUE),
+('Kepler-22b', 2, FALSE, 'Exoplanet', 24500, TRUE),
+('Proxima b', 2, FALSE, 'Exoplanet', 7160, TRUE),
+('TRAPPIST-1e', 2, FALSE, 'Exoplanet', 5790, TRUE),
+('TRAPPIST-1f', 2, FALSE, 'Exoplanet', 5820, TRUE);
+
+-- Create the moon table
+CREATE TABLE moon (
+  moon_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  planet_id INT REFERENCES planet(planet_id) NOT NULL,
+  diameter_km INT NOT NULL,
+  has_atmosphere BOOLEAN NOT NULL,
+  is_spherical BOOLEAN NOT NULL
 );
 
--- Step 4: Insert planets (example data)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Earth', 'Planet', 'The third planet from the Sun and the only one known to support life.', 5.972, 12742, 149.6),
-    ('Mars', 'Planet', 'The fourth planet from the Sun, known as the Red Planet.', 0.64171, 6779, 227.9),
-    ('Jupiter', 'Planet', 'The fifth planet from the Sun, the largest planet in the Solar System.', 1898.19, 139820, 778.5),
-    ('Saturn', 'Planet', 'The sixth planet from the Sun, known for its beautiful rings.', 568.34, 116460, 1433.5);
+-- Insert at least 20 moons
+INSERT INTO moon (name, planet_id, diameter_km, has_atmosphere, is_spherical) VALUES
+('Moon', 1, 3474, FALSE, TRUE),
+('Phobos', 2, 22, FALSE, FALSE),
+('Deimos', 2, 12, FALSE, FALSE),
+('Io', 3, 3643, TRUE, TRUE),
+('Europa', 3, 3121, TRUE, TRUE),
+('Ganymede', 3, 5268, TRUE, TRUE),
+('Callisto', 3, 4821, TRUE, TRUE),
+('Titan', 4, 5150, TRUE, TRUE),
+('Enceladus', 4, 504, TRUE, TRUE),
+('Mimas', 4, 396, FALSE, TRUE),
+('Triton', 5, 2706, TRUE, TRUE),
+('Oberon', 6, 1522, FALSE, TRUE),
+('Titania', 6, 1577, FALSE, TRUE),
+('Ariel', 6, 1158, FALSE, TRUE),
+('Umbriel', 6, 1169, FALSE, TRUE),
+('Miranda', 6, 471, FALSE, TRUE),
+('Charon', 8, 1212, FALSE, TRUE),
+('Nix', 8, 49, FALSE, FALSE),
+('Hydra', 8, 61, FALSE, FALSE),
+('Kerberos', 8, 19, FALSE, FALSE);
 
--- Step 5: Insert moons (example data)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Moon', 'Moon', 'Earth\'s only natural satellite.', 0.073, 3474.8, 384.4),
-    ('Phobos', 'Moon', 'One of Mars\' moons, the closest to Mars.', 0.0001, 22.4, 9377.0),
-    ('Deimos', 'Moon', 'The second moon of Mars, smaller and farther than Phobos.', 0.00006, 12.4, 23460.0),
-    ('Europa', 'Moon', 'One of Jupiter\'s moons, known for its icy surface.', 0.0048, 3121.6, 670900.0),
-    ('Titan', 'Moon', 'The largest moon of Saturn, with a thick atmosphere.', 1.3452, 5150.0, 1221900.0);
+-- Create a fifth table: planet_types
+CREATE TABLE planet_types (
+  planet_type_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  is_common BOOLEAN NOT NULL,
+  avg_radius INT NOT NULL
+);
 
--- Step 6: Link moons to their respective planets (orbits)
-INSERT INTO orbits (planet_id, moon_id, orbit_distance)
-VALUES 
-    ((SELECT id FROM celestial_bodies WHERE name = 'Earth'), (SELECT id FROM celestial_bodies WHERE name = 'Moon'), 384400),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Mars'), (SELECT id FROM celestial_bodies WHERE name = 'Phobos'), 9377),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Mars'), (SELECT id FROM celestial_bodies WHERE name = 'Deimos'), 23460),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Jupiter'), (SELECT id FROM celestial_bodies WHERE name = 'Europa'), 670900),
-    ((SELECT id FROM celestial_bodies WHERE name = 'Saturn'), (SELECT id FROM celestial_bodies WHERE name = 'Titan'), 1221900);
-
--- Step 7: Additional sample data for other celestial bodies (like stars)
-INSERT INTO celestial_bodies (name, type, description, mass, diameter, distance_from_sun)
-VALUES 
-    ('Sun', 'Star', 'The star at the center of our Solar System.', 1989000, 1392000, 0);
-
--- Step 8: Example Queries (Optional to include)
--- These queries are just for reference, you can remove or execute them after the database is created.
--- Query: Get all planets
-SELECT * FROM celestial_bodies WHERE type = 'Planet';
-
--- Query: Get moons of Mars
-SELECT b.name AS moon_name, o.orbit_distance
-FROM celestial_bodies b
-JOIN orbits o ON b.id = o.moon_id
-JOIN celestial_bodies p ON o.planet_id = p.id
-WHERE p.name = 'Mars';
-
--- Query: Get the planet with the most moons
-SELECT p.name, COUNT(o.moon_id) AS moon_count
-FROM celestial_bodies p
-JOIN orbits o ON p.id = o.planet_id
-GROUP BY p.name
-ORDER BY moon_count DESC
-LIMIT 1;
+-- Insert data into planet_types
+INSERT INTO planet_types (name, description, is_common, avg_radius) VALUES
+('Terrestrial', 'Rocky surface planets like Earth and Mars.', TRUE, 6000),
+('Gas Giant', 'Massive planets with thick atmospheres like Jupiter.', TRUE, 70000),
+('Ice Giant', 'Gas planets with icy components like Neptune.', TRUE, 25000),
+('Exoplanet', 'Planets outside our solar system.', TRUE, 12000),
+('Dwarf Planet', 'Smaller celestial bodies like Pluto.', FALSE, 1200);
