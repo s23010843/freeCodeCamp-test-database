@@ -1,82 +1,83 @@
--- Create the database
+-- 1. Create the universe database
 CREATE DATABASE universe;
+
+-- Connect to the universe database
 \c universe;
 
--- Create the galaxy table
+-- 2. Create galaxy table
 CREATE TABLE galaxy (
   galaxy_id SERIAL PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
   galaxy_type TEXT NOT NULL,
   age_in_millions_of_years INT NOT NULL,
-  distance_from_earth NUMERIC NOT NULL,
   has_life BOOLEAN NOT NULL
 );
 
--- Insert at least 6 galaxies
-INSERT INTO galaxy (name, galaxy_type, age_in_millions_of_years, distance_from_earth, has_life) VALUES
-('Milky Way', 'Spiral', 13600, 0.0, TRUE),
-('Andromeda', 'Spiral', 10000, 2537000, FALSE),
-('Triangulum', 'Spiral', 9000, 3000000, FALSE),
-('Whirlpool', 'Spiral', 8000, 23000000, FALSE),
-('Sombrero', 'Elliptical', 10000, 29000000, FALSE),
-('Large Magellanic Cloud', 'Irregular', 7000, 163000, FALSE);
+-- Insert 6 galaxies
+INSERT INTO galaxy (name, galaxy_type, age_in_millions_of_years, has_life) VALUES
+('Milky Way', 'Spiral', 13600, TRUE),
+('Andromeda', 'Spiral', 10000, FALSE),
+('Triangulum', 'Spiral', 9000, FALSE),
+('Whirlpool', 'Spiral', 8000, FALSE),
+('Sombrero', 'Elliptical', 10000, FALSE),
+('Large Magellanic Cloud', 'Irregular', 7000, FALSE);
 
--- Create the star table
+-- 3. Create star table
 CREATE TABLE star (
   star_id SERIAL PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
-  galaxy_id INT REFERENCES galaxy(galaxy_id) NOT NULL,
+  galaxy_id INT NOT NULL REFERENCES galaxy(galaxy_id),
   mass NUMERIC NOT NULL,
-  is_spherical BOOLEAN NOT NULL,
-  temperature INT NOT NULL
-);
-
--- Insert at least 6 stars
-INSERT INTO star (name, galaxy_id, mass, is_spherical, temperature) VALUES
-('Sun', 1, 1.989e30, TRUE, 5778),
-('Proxima Centauri', 1, 0.122e30, TRUE, 3042),
-('Sirius', 1, 2.02e30, TRUE, 9940),
-('Betelgeuse', 1, 11.6e30, TRUE, 3500),
-('Alpha Centauri A', 1, 1.1e30, TRUE, 5790),
-('Rigel', 1, 18e30, TRUE, 11000);
-
--- Create the planet table
-CREATE TABLE planet (
-  planet_id SERIAL PRIMARY KEY,
-  name VARCHAR(100) UNIQUE NOT NULL,
-  star_id INT REFERENCES star(star_id) NOT NULL,
-  has_life BOOLEAN NOT NULL,
-  planet_type TEXT NOT NULL,
-  radius_km INT NOT NULL,
+  temperature INT NOT NULL,
   is_spherical BOOLEAN NOT NULL
 );
 
--- Insert at least 12 planets
-INSERT INTO planet (name, star_id, has_life, planet_type, radius_km, is_spherical) VALUES
-('Earth', 1, TRUE, 'Terrestrial', 6371, TRUE),
-('Mars', 1, FALSE, 'Terrestrial', 3389, TRUE),
-('Jupiter', 1, FALSE, 'Gas Giant', 69911, TRUE),
-('Saturn', 1, FALSE, 'Gas Giant', 58232, TRUE),
-('Neptune', 1, FALSE, 'Ice Giant', 24622, TRUE),
-('Uranus', 1, FALSE, 'Ice Giant', 25362, TRUE),
-('Venus', 1, FALSE, 'Terrestrial', 6052, TRUE),
-('Mercury', 1, FALSE, 'Terrestrial', 2439, TRUE),
-('Kepler-22b', 2, FALSE, 'Exoplanet', 24500, TRUE),
-('Proxima b', 2, FALSE, 'Exoplanet', 7160, TRUE),
-('TRAPPIST-1e', 2, FALSE, 'Exoplanet', 5790, TRUE),
-('TRAPPIST-1f', 2, FALSE, 'Exoplanet', 5820, TRUE);
+-- Insert 6 stars
+INSERT INTO star (name, galaxy_id, mass, temperature, is_spherical) VALUES
+('Sun', 1, 1.989e30, 5778, TRUE),
+('Proxima Centauri', 1, 0.122e30, 3042, TRUE),
+('Sirius', 1, 2.02e30, 9940, TRUE),
+('Betelgeuse', 1, 11.6e30, 3500, TRUE),
+('Alpha Centauri A', 1, 1.1e30, 5790, TRUE),
+('Rigel', 1, 18e30, 11000, TRUE);
 
--- Create the moon table
+-- 4. Create planet table
+CREATE TABLE planet (
+  planet_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  star_id INT NOT NULL REFERENCES star(star_id),
+  planet_type TEXT NOT NULL,
+  radius_km INT NOT NULL,
+  has_life BOOLEAN NOT NULL,
+  is_spherical BOOLEAN NOT NULL
+);
+
+-- Insert 12 planets
+INSERT INTO planet (name, star_id, planet_type, radius_km, has_life, is_spherical) VALUES
+('Earth', 1, 'Terrestrial', 6371, TRUE, TRUE),
+('Mars', 1, 'Terrestrial', 3389, FALSE, TRUE),
+('Jupiter', 1, 'Gas Giant', 69911, FALSE, TRUE),
+('Saturn', 1, 'Gas Giant', 58232, FALSE, TRUE),
+('Neptune', 1, 'Ice Giant', 24622, FALSE, TRUE),
+('Uranus', 1, 'Ice Giant', 25362, FALSE, TRUE),
+('Venus', 1, 'Terrestrial', 6052, FALSE, TRUE),
+('Mercury', 1, 'Terrestrial', 2439, FALSE, TRUE),
+('Kepler-22b', 2, 'Exoplanet', 24500, FALSE, TRUE),
+('Proxima b', 2, 'Exoplanet', 7160, FALSE, TRUE),
+('TRAPPIST-1e', 2, 'Exoplanet', 5790, FALSE, TRUE),
+('TRAPPIST-1f', 2, 'Exoplanet', 5820, FALSE, TRUE);
+
+-- 5. Create moon table
 CREATE TABLE moon (
   moon_id SERIAL PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
-  planet_id INT REFERENCES planet(planet_id) NOT NULL,
+  planet_id INT NOT NULL REFERENCES planet(planet_id),
   diameter_km INT NOT NULL,
   has_atmosphere BOOLEAN NOT NULL,
   is_spherical BOOLEAN NOT NULL
 );
 
--- Insert at least 20 moons
+-- Insert 20 moons
 INSERT INTO moon (name, planet_id, diameter_km, has_atmosphere, is_spherical) VALUES
 ('Moon', 1, 3474, FALSE, TRUE),
 ('Phobos', 2, 22, FALSE, FALSE),
@@ -99,19 +100,19 @@ INSERT INTO moon (name, planet_id, diameter_km, has_atmosphere, is_spherical) VA
 ('Hydra', 8, 61, FALSE, FALSE),
 ('Kerberos', 8, 19, FALSE, FALSE);
 
--- Create a fifth table: planet_types
+-- 6. Create a fifth table: planet_types
 CREATE TABLE planet_types (
   planet_type_id SERIAL PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
   description TEXT NOT NULL,
   is_common BOOLEAN NOT NULL,
-  avg_radius INT NOT NULL
+  avg_radius_km INT NOT NULL
 );
 
 -- Insert data into planet_types
-INSERT INTO planet_types (name, description, is_common, avg_radius) VALUES
-('Terrestrial', 'Rocky surface planets like Earth and Mars.', TRUE, 6000),
-('Gas Giant', 'Massive planets with thick atmospheres like Jupiter.', TRUE, 70000),
-('Ice Giant', 'Gas planets with icy components like Neptune.', TRUE, 25000),
-('Exoplanet', 'Planets outside our solar system.', TRUE, 12000),
+INSERT INTO planet_types (name, description, is_common, avg_radius_km) VALUES
+('Terrestrial', 'Rocky planets with solid surfaces.', TRUE, 6000),
+('Gas Giant', 'Massive planets with thick atmospheres.', TRUE, 70000),
+('Ice Giant', 'Gas planets with icy elements.', TRUE, 25000),
+('Exoplanet', 'Planets outside our Solar System.', TRUE, 12000),
 ('Dwarf Planet', 'Smaller celestial bodies like Pluto.', FALSE, 1200);
